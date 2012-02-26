@@ -1,4 +1,16 @@
 //AutoAwesome - listens for event for beginning of song which triggers clicking of Awesome
+(function(){
+    // remove layerX and layerY
+    var all = $.event.props,
+        len = all.length,
+        res = [];
+    while (len--) {
+      var el = all[len];
+      if (el != 'layerX' && el != 'layerY') res.push(el);
+    }
+    $.event.props = res;
+}());
+
 
 function getAwesomeId() {
 	var awesomeId="";
@@ -33,5 +45,12 @@ function awesomeHandler(){
   console.log("Found awesome button " + awesomeId );
   $(awesomeId).trigger(e); //attribute for 'AWESOME' button
 }
-turntable.addEventListener("trackstart", awesomeHandler);
-awesomeHandler();
+
+function awesomeIt() {
+  a=[];for(var x in turntable){a.push(x);}var room=turntable[a[0]];
+  room.connectRoomSocket("up");
+  console.log("UPVOTE!");
+}
+
+turntable.addEventListener("trackstart", awesomeIt);
+awesomeIt();
