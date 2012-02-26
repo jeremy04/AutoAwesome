@@ -46,7 +46,17 @@ function awesomeHandler(){
   $(awesomeId).trigger(e); //attribute for 'AWESOME' button
 }
 
+function sleep(milliseconds) {
+  var start = new Date().getTime();
+  for (var i = 0; i < 1e7; i++) {
+    if ((new Date().getTime() - start) > milliseconds){
+      break;
+    }
+  }
+}
 function awesomeIt() {
+  sleep(5000);
+  turntable.lastMotionTime = util.now(); 
   a=[];for(var x in turntable){a.push(x);}var room=turntable[a[0]];
   room.connectRoomSocket("up");
   console.log("UPVOTE!");
