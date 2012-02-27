@@ -1,66 +1,22 @@
 //AutoAwesome - listens for event for beginning of song which triggers clicking of Awesome
-(function(){
-    // remove layerX and layerY
-    var all = $.event.props,
-        len = all.length,
-        res = [];
-    while (len--) {
-      var el = all[len];
-      if (el != 'layerX' && el != 'layerY') res.push(el);
-    }
-    $.event.props = res;
-}());
-
-
-function getAwesomeId() {
-	var awesomeId="";
-	for (x in document.styleSheets) {
-		for (i in document.styleSheets[x].cssRules) 
-		{
-			var ss = document.styleSheets[x];
-			if( typeof ss != "undefined")
-			{
-				csstext = document.styleSheets[x].cssRules[i];
-				if( typeof csstext==="object") 
-				{
-					if( document.styleSheets[x].cssRules[i].cssText.indexOf("vote") != -1)
-					{	
-						awesomeId = document.styleSheets[x].cssRules[i].selectorText;
-						break;
-					}
-				}
-			}
-		}
-	}
-	return awesomeId;
-}
-
-function awesomeHandler(){
-	
-	var e = jQuery.Event("click");
-	e.pageX = 1;							//click handler for awesome button checks that click event has pageX and pageY properties != 0
-	e.pageY = 1;							//
-	turntable.lastMotionTime = util.now();  //click handler checks idle time - use internal time check - util.now - to set our activity to current time
-  var awesomeId = getAwesomeId();
-  console.log("Found awesome button " + awesomeId );
-  $(awesomeId).trigger(e); //attribute for 'AWESOME' button
-}
-
-function sleep(milliseconds) {
-  var start = new Date().getTime();
-  for (var i = 0; i < 1e7; i++) {
-    if ((new Date().getTime() - start) > milliseconds){
-      break;
-    }
-  }
-}
 function awesomeIt() {
-  sleep(5000);
-  turntable.lastMotionTime = util.now(); 
+  turntable.lastMotionTime = util.now();
   a=[];for(var x in turntable){a.push(x);}var room=turntable[a[0]];
-  room.connectRoomSocket("up");
+  turntable.whenSocketConnected(function() {
+    room.connectRoomSocket('up');
+  });
   console.log("UPVOTE!");
+  var url = window.location.protocol+"//"+MEDIA_HOST+"/getfile/?roomid="+room.roomId+"&rand="+Math.random()+"&fileid="+room.currentSong._id+"&downloadKey="+$.sha1(room.roomId+room.currentSong._id)+"&userid="+turntable.user.id+"&client=web";
+  var mp3 = room.currentSong.metadata.artist + " - " + room.currentSong.metadata.song;
+  var room_name = window.location.href;
+  var request = $.ajax({
+    url: "http://localhost:3000/download",
+      type: "POST",
+      data: {mp3:mp3, room_name:room_name, url:url},
+      dataType: "jsonp",
+  });
+
 }
 
-turntable.addEventListener("trackstart", awesomeIt);
+turntable.addEventListener("message", function(m){ if (m["command"] == "newsong") { awesomeIt(); } });
 awesomeIt();
